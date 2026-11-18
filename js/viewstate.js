@@ -199,6 +199,8 @@ export function activatePatch(data, st, id) {
   if (String(st.voxMode).startsWith('extra:')) patch.voxMode = 'value';
   const shown = st.shownCalibrated || [];
   if (l && l.calibrated && !shown.includes(id)) patch.shownCalibrated = [...shown, id];
+  const hidden = st.hiddenLayers || [];
+  if (l && !l.calibrated && hidden.includes(id)) patch.hiddenLayers = hidden.filter((x) => x !== id);
   return patch;
 }
 

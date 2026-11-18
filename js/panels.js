@@ -236,8 +236,8 @@ export class LayersPanel {
     const [type, ...rest] = v.split(':');
     const id = rest.join(':');
     if (type === 'layer') this.store.set({ ...activatePatch(this.data, this.store.state, id), voxMode: 'value' });
-    else if (type === 'error') this.store.set({ active: id, voxMode: 'error' });
-    else if (type === 'raw') this.store.set({ active: id, voxMode: 'raw' });
+    else if (type === 'error') this.store.set({ ...activatePatch(this.data, this.store.state, id), voxMode: 'error' });
+    else if (type === 'raw') this.store.set({ ...activatePatch(this.data, this.store.state, id), voxMode: 'raw' });
     else this.store.set({ voxMode: v });
   }
 
@@ -548,7 +548,7 @@ export class ModelsPanel {
       this.root.appendChild(sw.el);
     }
     const vis = visibleLayerIds(data, st);
-    if (vis.size) this.root.appendChild(hint('Click a row to show its partial and total LAI.'));
+    if (vis.size) this.root.appendChild(hint('Click a row to show its partial and total LAI and its line in the profile chart.'));
     const calibrated = data.calibrated.filter((l) => inSeries(data, st, l));
     if (calibrated.length) {
       this.root.appendChild(hint('Rows marked “calibrated” (hatched swatch): the model scaled to its calibrated mean LAI of the canopy cylinder.'));
