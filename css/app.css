@@ -427,7 +427,7 @@ body.details-collapsed .details { display: none; }
 .date-legend > span { display: inline-flex; align-items: center; gap: 5px; }
 .date-legend .hdhp-mark { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
 .date-panel .date-preview { margin: 8px 0 0; }
-.help-body .help-cite a { overflow-wrap: anywhere; }
+.help-body a { overflow-wrap: anywhere; }
 .help-body #help-preview { grid-column: 1 / -1; margin-top: 12px; padding: 10px 14px; border-radius: 8px; background: var(--accent-soft); }
 .help-body #help-preview p + p { margin-top: 6px; }
 .date-failure, .date-running { margin-top: 8px; font-size: 12px; }

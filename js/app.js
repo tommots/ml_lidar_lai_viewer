@@ -865,6 +865,11 @@ function fillPreviewHelp(cat) {
     if (pv.paper.doi) cite.append(' (', link(pv.paper.doi), ')');
     if (pv.dataDoi) cite.append(', the data (', link(pv.dataDoi), ')');
     cite.append(', and the data references below.');
+    const refPaper = $('help-ref-paper');
+    if (refPaper && pv.paper.doi && DOI_RE.test(pv.paper.doi)) {
+      clear(refPaper);
+      refPaper.append(', ', h('a', { href: `https://doi.org/${pv.paper.doi}`, target: '_blank', rel: 'noopener noreferrer' }, `doi:${pv.paper.doi}`));
+    }
   }
   sec.hidden = false;
 }
