@@ -162,7 +162,7 @@ function onDoubleClick(app, e) {
     if (p && p.point) point = p.point;
     else if (p && p.groundPoint) point = new Vector3(...p.groundPoint);
   }
-  if (point) app.viewer.focusOn(point);
+  if (point) app.viewer.setPivot(point);
 }
 
 function fmtH(v) {

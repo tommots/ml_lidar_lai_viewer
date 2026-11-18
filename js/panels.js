@@ -146,7 +146,7 @@ export class LayersPanel {
     const lmaps = [{ value: 'fade_greens', label: 'Fading green' }, { value: 'viridis', label: 'Viridis' }];
     c.vmap = makeSegmented({ name: 'vmap', label: 'Partial LAI color map', options: lmaps, value: st.voxMap, onChange: (v) => set({ voxMap: v }) });
     mapButtons(c.vmap.el);
-    c.scale = makeSegmented({ name: 'scale', label: 'Color scale', options: [{ value: 'shared', label: 'Shared by all layers' }, { value: 'layer', label: 'Per layer' }], value: st.scaleMode, onChange: (v) => set({ scaleMode: v }) });
+    c.scale = makeSegmented({ name: 'scale', label: 'Color scale', options: [{ value: 'shared', label: 'All layers' }, { value: 'layer', label: 'Per layer' }], value: st.scaleMode, onChange: (v) => set({ scaleMode: v }) });
     gV.body.append(c.voxSrc.el, c.thr.el, c.vop.el,
       h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'Style'), c.vst.el),
       h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'Color map'), c.vmap.el),
