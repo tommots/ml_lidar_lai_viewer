@@ -55,30 +55,6 @@ export class Viewer {
     this.controls.zoomToCursor = true;
     this.lastCam = { p: new THREE.Vector3(Infinity, 0, 0), q: new THREE.Quaternion(), t: new THREE.Vector3() };
     this.controls.addEventListener('change', () => { if (this.cameraMoved()) this.requestRender(); });
-    this.pivot = null;
-    this.pivotMark = null;
-    this.pivotTimer = 0;
-    const orbitUpdate = this.controls.update.bind(this.controls);
-    const q0 = new THREE.Quaternion();
-    const t0 = new THREE.Vector3();
-    const rot = new THREE.Quaternion();
-    const d = new THREE.Vector3();
-    const rd = new THREE.Vector3();
-    this.controls.update = (...args) => {
-      if (!this.pivot) return orbitUpdate(...args);
-      q0.copy(this.camera.quaternion);
-      t0.copy(this.controls.target);
-      const changed = orbitUpdate(...args);
-      rot.copy(this.camera.quaternion).multiply(q0.invert());
-      if (1 - Math.abs(rot.w) > 1e-12) {
-        d.subVectors(this.pivot, t0);
-        rd.copy(d).applyQuaternion(rot);
-        d.sub(rd);
-        this.camera.position.add(d);
-        this.controls.target.add(d);
-      }
-      return changed;
-    };
 
     const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8a8a, 2.3);
     hemi.position.set(0, 0, 1);
@@ -300,7 +276,6 @@ export class Viewer {
   }
 
   moveTo(pos, target, animate = true) {
-    this.pivot = null;
     this.settle(pos, target);
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!animate || reduce) {
@@ -340,7 +315,6 @@ export class Viewer {
   }
 
   turn(kind) {
-    this.pivot = null;
     if (this.animations.length && this.goal) {
       this.animations = [];
       this.camera.position.copy(this.goal.pos);
@@ -381,32 +355,12 @@ export class Viewer {
     this.requestRender();
   }
 
-  setPivot(point) {
-    this.pivot = point.clone();
-    if (!this.pivotMark) {
-      this.pivotMark = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14),
-        new THREE.MeshBasicMaterial({ color: 0xe4572e, depthTest: false, depthWrite: false, transparent: true, opacity: 0.95 }));
-      this.pivotMark.renderOrder = 1000;
-      this.pivotMark.name = 'orbit-pivot';
-    }
-    this.pivotMark.position.copy(point);
-    this.pivotMark.scale.setScalar(Math.max(1e-3, this.camera.position.distanceTo(point) * 0.006));
-    this.scene.add(this.pivotMark);
-    clearTimeout(this.pivotTimer);
-    this.pivotTimer = setTimeout(() => {
-      this.scene.remove(this.pivotMark);
-      this.requestRender();
-    }, 900);
-    this.requestRender();
-  }
-
   getCameraState() {
     return { position: this.camera.position.toArray(), target: this.controls.target.toArray() };
   }
 
   setCameraState(s) {
     this.animations = [];
-    this.pivot = null;
     this.camera.position.fromArray(s.position);
     this.controls.target.fromArray(s.target);
     this.controls.update();

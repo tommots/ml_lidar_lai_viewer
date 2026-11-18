@@ -87,7 +87,6 @@ export function wireCanvas(app, el, env) {
       app.store.set({ footprint: p && p.fp && d && d.inMask(p.fp[0], p.fp[1]) ? p.fp : null });
     }
   });
-  el.addEventListener('dblclick', (e) => onDoubleClick(app, e));
 }
 
 export function setHoverOutline(app, hov) {
@@ -141,28 +140,12 @@ function onHover(app, el, env, e) {
       rows.push({ value: fmtSigned(v - tt, 2), label: 'prediction − label' });
     }
   }
-  app.tooltip.show(at.x, at.y, { title, rows, note: 'Click: profile of this column · double-click: orbit here' }, at.bounds, tipKey);
+  app.tooltip.show(at.x, at.y, { title, rows, note: 'Click: profile of this column' }, at.bounds, tipKey);
   setHoverOutline(app, {
     view: p.view, ix: p.cell ? p.cell[0] : p.fp[0], iy: p.cell ? p.cell[1] : p.fp[1], grid: p.grid || d.grid,
     z: p.zCell ?? d.rasterZ(p.fp[0], p.fp[1]),
   });
   el.style.cursor = 'pointer';
-}
-
-function onDoubleClick(app, e) {
-  if (!app.cur) return;
-  const v = app.viewer.viewAt(e.clientX, e.clientY);
-  if (!v) return;
-  const cam = app.viewer.camera;
-  app.viewer.applyProjection(v.vp);
-  cam.updateMatrixWorld();
-  let point = app.store.state.showPoints ? app.cur.points.pick(cam, v.vp, v.x, v.y, 8) : null;
-  if (!point) {
-    const p = pickAt(app, e.clientX, e.clientY);
-    if (p && p.point) point = p.point;
-    else if (p && p.groundPoint) point = new Vector3(...p.groundPoint);
-  }
-  if (point) app.viewer.setPivot(point);
 }
 
 function fmtH(v) {
