@@ -689,6 +689,7 @@ export class DetailsPanel {
     const fp = st.footprint && d.inMask(st.footprint[0], st.footprint[1]) ? st.footprint : null;
     const vis = visibleLayerIds(d, st);
     const series = [];
+    const rows = [];
     const ordered = [d.truth, ...groupedLayers(d, st).flatMap((g) => g.layers)].filter(Boolean);
     for (const l of ordered) {
       if (!vis.has(l.id) || !l.profile) continue;
@@ -697,12 +698,14 @@ export class DetailsPanel {
         hidden: st.hiddenLayers.includes(l.id), values: d.profile(l.id, fp),
       });
       const c = l.cal;
-      if (c && c.profile && vis.has(c.id) && !chartHidden(c, st)) {
+      if (c && c.profile && vis.has(c.id)) {
         series.push({
-          id: c.id, label: c.label, legend: c.short, color: c.color, kind: 'model', dashed: true, dash: CAL_DASH,
-          active: c.id === st.active, hidden: false, values: d.profile(c.id, fp),
+          id: c.id, label: c.label, legend: l.short || l.label, ariaLabel: `${l.short || l.label}, calibrated`,
+          color: c.color, kind: 'model', dashed: true, dash: CAL_DASH,
+          active: c.id === st.active, hidden: chartHidden(c, st), values: d.profile(c.id, fp),
         });
       }
+      rows.push([l.id, c && c.profile && vis.has(c.id) ? c.id : null]);
       if (st.voxMode === 'raw' && l.id === st.active && l.profileRaw) {
         const rawId = `${l.id}:raw`;
         series.push({
@@ -711,15 +714,32 @@ export class DetailsPanel {
         });
       }
     }
-    const shownCal = st.shownCalibrated || [];
-    const calIds = ordered.filter((l) => vis.has(l.id) && l.profile && !st.hiddenLayers.includes(l.id)
-      && l.cal && l.cal.profile && vis.has(l.cal.id)).map((l) => l.cal.id);
-    const calOn = calIds.some((id) => shownCal.includes(id));
-    const extraKeys = calIds.length ? [{
-      label: 'Calibrated', pressed: calOn,
-      title: calOn ? 'Hide the dashed calibrated lines' : 'Show the calibrated line of each shown model, dashed',
-      onClick: () => this.store.set({ shownCalibrated: calOn ? shownCal.filter((id) => !calIds.includes(id)) : [...new Set([...shownCal, ...calIds])] }),
-    }] : [];
+    let legendGrid = null;
+    if (rows.some((r) => r[1])) {
+      const modelIds = rows.map((r) => r[0]);
+      const calIds = rows.map((r) => r[1]).filter(Boolean);
+      const unOn = modelIds.some((id) => !st.hiddenLayers.includes(id));
+      const calOn = calIds.some((id) => (st.shownCalibrated || []).includes(id));
+      legendGrid = {
+        rows,
+        heads: [
+          {
+            label: 'Uncalibrated', pressed: unOn, title: unOn ? 'Hide all uncalibrated lines' : 'Show all uncalibrated lines',
+            onClick: () => {
+              const hid = this.store.state.hiddenLayers;
+              this.store.set({ hiddenLayers: unOn ? [...new Set([...hid, ...modelIds])] : hid.filter((id) => !modelIds.includes(id)) });
+            },
+          },
+          {
+            label: 'Calibrated', dashed: true, pressed: calOn, title: calOn ? 'Hide all calibrated lines' : 'Show all calibrated lines',
+            onClick: () => {
+              const shown = this.store.state.shownCalibrated || [];
+              this.store.set({ shownCalibrated: calOn ? shown.filter((id) => !calIds.includes(id)) : [...new Set([...shown, ...calIds])] });
+            },
+          },
+        ],
+      };
+    }
     const { dz, nz } = d.grid;
     const yMax = Math.min(nz * dz, Math.max(6, Math.ceil((d.canopyTop() + 2) / dz - 1e-9) * dz));
     const kTop = Math.round(yMax / dz);
@@ -739,7 +759,7 @@ export class DetailsPanel {
     this.chart.update({
       title: fp ? `Prediction column (${fp[0]}, ${fp[1]})` : `Mean profile over the ${d.maskCount} prediction columns`,
       sub: cue ? `${cue.charAt(0).toUpperCase()}${cue.slice(1)} · ${sub}` : sub,
-      dz, yMax, xLabel: `Partial LAI per ${dz} m height bin [m² m⁻²]`, series, extraKeys,
+      dz, yMax, xLabel: `Partial LAI per ${dz} m height bin [m² m⁻²]`, series, legendGrid,
       select: zr ? [zr[0] * dz, (zr[1] + 1) * dz] : null,
       note: series.length ? (above.length ? `Above ${yMax} m (not drawn): ${above.join(' · ')} LAI.` : '')
         : 'No model profile for this view.',

@@ -809,7 +809,15 @@ body:not(.has-item) #chart, body:not(.has-item) #totals, body:not(.has-item) #in
   font-size: 12px; color: var(--text-2); cursor: pointer;
 }
 .chart-key:hover { background: var(--surface-3); }
-.chart-key.off { color: var(--muted); text-decoration: line-through; opacity: 0.75; }
+.chart-key.off { color: var(--muted); }
+.chart-key.off .line-key { opacity: 0.3; }
+.chart-legend.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 6px; }
+.chart-legend.grid > li { min-width: 0; }
+.chart-legend .legend-head { border-bottom: 1px solid var(--border); margin-bottom: 2px; padding-bottom: 1px; }
+.chart-legend .span { grid-column: 1 / -1; }
+.chart-key.head { font-weight: 600; color: var(--text); }
+.chart-key.head.off { color: var(--muted); }
+.chart-key.head .line-key:not(.dashed) { background: currentColor; }
 .chart-key.active { color: var(--text); font-weight: 600; }
 .line-key { display: inline-block; width: 16px; height: 3px; border-radius: 2px; }
 .line-key.truth { background: var(--text); height: 4px; }

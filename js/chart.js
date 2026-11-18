@@ -111,25 +111,42 @@ export class ProfileChart {
 
   renderLegend() {
     clear(this.legend);
+    const grid = this.spec.legendGrid;
+    this.legend.classList.toggle('grid', !!grid);
+    if (!grid) {
+      for (const se of this.spec.series) this.legend.appendChild(h('li', {}, this.key(se)));
+      return;
+    }
+    for (const hd of grid.heads) {
+      this.legend.appendChild(h('li', { class: 'legend-head' }, h('button', {
+        type: 'button', class: `chart-key head${hd.pressed ? '' : ' off'}`, 'aria-pressed': String(!!hd.pressed),
+        title: hd.title || '', onclick: () => hd.onClick && hd.onClick(),
+      }, h('span', { class: `line-key${hd.dashed ? ' dashed' : ''}`, 'aria-hidden': 'true' }), hd.label)));
+    }
+    const byId = new Map(this.spec.series.map((se) => [se.id, se]));
+    const inGrid = new Set();
+    for (const row of grid.rows) {
+      for (const id of row) {
+        const se = id ? byId.get(id) : null;
+        if (se) inGrid.add(id);
+        this.legend.appendChild(h('li', {}, se ? this.key(se) : null));
+      }
+    }
     for (const se of this.spec.series) {
-      const action = se.hidden ? 'Show in chart' : 'Hide from chart';
-      const btn = h('button', {
-        type: 'button', class: `chart-key${se.hidden ? ' off' : ''}${se.active ? ' active' : ''}`,
-        'aria-pressed': String(!se.hidden), title: se.legend ? `${se.label} — ${action.toLowerCase()}` : action,
-        onclick: () => this.opts.onToggle && this.opts.onToggle(se.id),
-      },
-      h('span', { class: `line-key${se.kind === 'truth' ? ' truth' : ''}${se.dashed ? ' dashed' : ''}`, style: se.kind === 'truth' ? {} : { background: se.color, '--c': se.color }, 'aria-hidden': 'true' }),
-      se.legend || se.label);
-      this.legend.appendChild(h('li', {}, btn));
+      if (!inGrid.has(se.id)) this.legend.appendChild(h('li', { class: 'span' }, this.key(se)));
     }
-    for (const k of this.spec.extraKeys || []) {
-      const btn = h('button', {
-        type: 'button', class: `chart-key${k.pressed ? '' : ' off'}`, 'aria-pressed': String(!!k.pressed),
-        title: k.title || '', onclick: () => k.onClick && k.onClick(),
-      },
-      h('span', { class: 'line-key dashed', 'aria-hidden': 'true' }), k.label);
-      this.legend.appendChild(h('li', {}, btn));
-    }
+  }
+
+  key(se) {
+    const action = se.hidden ? 'Show in chart' : 'Hide from chart';
+    return h('button', {
+      type: 'button', class: `chart-key${se.hidden ? ' off' : ''}${se.active ? ' active' : ''}`,
+      'aria-pressed': String(!se.hidden), 'aria-label': se.ariaLabel || null,
+      title: se.legend ? `${se.label} — ${action.toLowerCase()}` : action,
+      onclick: () => this.opts.onToggle && this.opts.onToggle(se.id),
+    },
+    h('span', { class: `line-key${se.kind === 'truth' ? ' truth' : ''}${se.dashed ? ' dashed' : ''}`, style: se.kind === 'truth' ? {} : { background: se.color, '--c': se.color }, 'aria-hidden': 'true' }),
+    se.legend || se.label);
   }
 
   renderTable() {
