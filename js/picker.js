@@ -377,7 +377,7 @@ export class Picker {
       dataset: { focusKey: `item:${it.id}` },
       onclick: () => this.handlers.onSelect(it, st === 'failed' ? { retry: true } : {}),
     },
-    h('span', { class: 'chip-dot', 'aria-hidden': 'true' }),
+    this.cat.mode === 'server' || stale ? h('span', { class: 'chip-dot', 'aria-hidden': 'true' }) : null,
     `${d.d} ${MONTHS[d.m]}`,
     hdhp ? h('span', { class: 'hdhp-mark', 'aria-hidden': 'true' }, 'H') : null,
     st === 'running' || st === 'queued' ? h('span', { class: 'chip-progress', style: { width: `${Math.max(4, progressOf(it) * 100)}%` }, 'aria-hidden': 'true' }) : null);
