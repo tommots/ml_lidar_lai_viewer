@@ -122,6 +122,15 @@ export class Picker {
     return null;
   }
 
+  selectTrap(t) {
+    const cur = this.current && this.cat ? this.cat.byId.get(this.current) : null;
+    this.trap = t.trap;
+    this.render();
+    if (!cur || cur.kind !== 'ecosense' || cur.meta.trap === t.trap) return;
+    const it = t.items.find((i) => i.meta.date === cur.meta.date);
+    if (it && itemStatus(it) !== 'failed' && this.available([it]).length) this.handlers.onSelect(it, {});
+  }
+
   matches(item) {
     if (!this.query) return true;
     return this.query.split(/\s+/).every((t) => item.search.includes(t));
@@ -303,7 +312,7 @@ export class Picker {
         style: rc ? { gridRow: rc[1], gridColumn: rc[2] } : null,
         'aria-pressed': String(selected), dataset: { focusKey: `trap:${t.trap}` },
         'aria-label': `Reference position ${t.trap}, ${canopyLabel(t.group).toLowerCase()} canopy, ${count(n, 'date')}`,
-        onclick: () => { this.trap = t.trap; this.render(); },
+        onclick: () => this.selectTrap(t),
       },
       h('span', { class: 'trap-name' }, t.trap),
       h('span', { class: `cg-badge ${canopyClass(t.group)}`, title: `${canopyLabel(t.group)} canopy`, 'aria-hidden': 'true' }, canopyLabel(t.group).charAt(0)),
