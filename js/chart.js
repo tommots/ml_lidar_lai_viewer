@@ -122,6 +122,14 @@ export class ProfileChart {
       se.legend || se.label);
       this.legend.appendChild(h('li', {}, btn));
     }
+    for (const k of this.spec.extraKeys || []) {
+      const btn = h('button', {
+        type: 'button', class: `chart-key${k.pressed ? '' : ' off'}`, 'aria-pressed': String(!!k.pressed),
+        title: k.title || '', onclick: () => k.onClick && k.onClick(),
+      },
+      h('span', { class: 'line-key dashed', 'aria-hidden': 'true' }), k.label);
+      this.legend.appendChild(h('li', {}, btn));
+    }
   }
 
   renderTable() {

@@ -548,10 +548,10 @@ export class ModelsPanel {
       this.root.appendChild(sw.el);
     }
     const vis = visibleLayerIds(data, st);
-    if (vis.size) this.root.appendChild(hint('Click a row to show its partial and total LAI. The eye hides it from the profile chart.'));
+    if (vis.size) this.root.appendChild(hint('Click a row to show its partial and total LAI.'));
     const calibrated = data.calibrated.filter((l) => inSeries(data, st, l));
     if (calibrated.length) {
-      this.root.appendChild(hint('Rows marked “calibrated” (hatched swatch): the model scaled to its calibrated mean LAI of the canopy cylinder; the eye draws its dashed line in the chart.'));
+      this.root.appendChild(hint('Rows marked “calibrated” (hatched swatch): the model scaled to its calibrated mean LAI of the canopy cylinder.'));
     }
     const sections = [];
     if (data.truth) sections.push({ label: 'Label', layers: [data.truth] });
@@ -630,18 +630,8 @@ export class ModelsPanel {
     this.store.set(activatePatch(this.data, this.store.state, id));
   }
 
-  eye(l, hidden) {
-    return h('button', {
-      type: 'button', class: 'icon-btn eye', 'aria-pressed': String(!hidden),
-      'aria-label': `${hidden ? 'Show' : 'Hide'} ${l.label} in the profile chart`,
-      dataset: { focusKey: `eye:${l.id}` },
-      onclick: () => this.store.set(chartTogglePatch(this.data, this.store.state, l.id)),
-    }, icon(hidden ? 'eyeOff' : 'eye', { size: 16 }));
-  }
-
   row(l, st) {
     const active = l.id === st.active;
-    const hidden = chartHidden(l, st);
     const stats = this.data.stats(l.id);
     const badges = [];
     const main = h('button', {
@@ -652,12 +642,11 @@ export class ModelsPanel {
     h('span', { class: `swatch${l.kind === 'truth' ? ' swatch-truth' : ''}`, style: l.kind === 'truth' ? {} : { background: l.color }, 'aria-hidden': 'true' }),
     h('span', { class: 'model-text' }, h('span', { class: 'model-label' }, l.label), badges.length ? h('span', { class: 'model-badges' }, badges) : null),
     h('span', { class: 'model-value', title: 'Mean total LAI of the prediction columns' }, fmt(stats.mean, 2)));
-    return h('li', { class: `model-row${active ? ' active' : ''}${hidden ? ' muted' : ''}` }, main, this.eye(l, hidden));
+    return h('li', { class: `model-row${active ? ' active' : ''}` }, main);
   }
 
   calRow(l, st) {
     const active = l.id === st.active;
-    const hidden = chartHidden(l, st);
     const main = h('button', {
       type: 'button', class: 'model-main', 'aria-pressed': String(active),
       title: l.notes, dataset: { focusKey: `main:${l.id}` },
@@ -668,7 +657,7 @@ export class ModelsPanel {
       h('span', { class: 'sr-only' }, `${l.base.label} `), 'calibrated',
       l.clipped ? [' ', h('span', { class: 'badge badge-warn', title: 'Calibrated value ≤ 0, shown as 0' }, 'shown as 0')] : null)),
     h('span', { class: 'model-value', title: 'Calibrated mean LAI of the canopy cylinder (slope × value + offset)' }, fmt(l.calValue, 2)));
-    return h('li', { class: `model-row model-sub${active ? ' active' : ''}${hidden ? ' muted' : ''}` }, main, this.eye(l, hidden));
+    return h('li', { class: `model-row model-sub${active ? ' active' : ''}` }, main);
   }
 }
 
@@ -722,6 +711,15 @@ export class DetailsPanel {
         });
       }
     }
+    const shownCal = st.shownCalibrated || [];
+    const calIds = ordered.filter((l) => vis.has(l.id) && l.profile && !st.hiddenLayers.includes(l.id)
+      && l.cal && l.cal.profile && vis.has(l.cal.id)).map((l) => l.cal.id);
+    const calOn = calIds.some((id) => shownCal.includes(id));
+    const extraKeys = calIds.length ? [{
+      label: 'Calibrated', pressed: calOn,
+      title: calOn ? 'Hide the dashed calibrated lines' : 'Show the calibrated line of each shown model, dashed',
+      onClick: () => this.store.set({ shownCalibrated: calOn ? shownCal.filter((id) => !calIds.includes(id)) : [...new Set([...shownCal, ...calIds])] }),
+    }] : [];
     const { dz, nz } = d.grid;
     const yMax = Math.min(nz * dz, Math.max(6, Math.ceil((d.canopyTop() + 2) / dz - 1e-9) * dz));
     const kTop = Math.round(yMax / dz);
@@ -741,7 +739,7 @@ export class DetailsPanel {
     this.chart.update({
       title: fp ? `Prediction column (${fp[0]}, ${fp[1]})` : `Mean profile over the ${d.maskCount} prediction columns`,
       sub: cue ? `${cue.charAt(0).toUpperCase()}${cue.slice(1)} · ${sub}` : sub,
-      dz, yMax, xLabel: `Partial LAI per ${dz} m height bin [m² m⁻²]`, series,
+      dz, yMax, xLabel: `Partial LAI per ${dz} m height bin [m² m⁻²]`, series, extraKeys,
       select: zr ? [zr[0] * dz, (zr[1] + 1) * dz] : null,
       note: series.length ? (above.length ? `Above ${yMax} m (not drawn): ${above.join(' · ')} LAI.` : '')
         : 'No model profile for this view.',

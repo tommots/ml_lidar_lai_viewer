@@ -202,7 +202,7 @@
       </section>
       <section>
         <h3>Models</h3>
-        <p>Click a model to draw it; its eye shows or hides its line in the profile chart, and the number is its mean total LAI.</p>
+        <p>Click a model to draw it; the number is its mean total LAI.</p>
         <ul>
           <li><strong>Gap fraction</strong>: the parametric baseline, which requires no training. A Beer–Lambert inversion of the proportion of returns below 1.8&nbsp;m above the terrain gives one total LAI per canopy cylinder (real data, Total LAI table only).</li>
           <li><strong>Hand-crafted features</strong>: Feature-MLP and Random Forest, on 35 height and density statistics of the points in the prediction column.</li>
@@ -213,12 +213,12 @@
       </section>
       <section>
         <h3>Uncalibrated and calibrated (real data)</h3>
-        <p>Every method predicts from the point cloud alone, so its values are <strong>uncalibrated</strong>. A model’s value for a reference position and date is its mean LAI over the 109 prediction columns of the canopy cylinder. <strong>Calibrated</strong> = slope × value + offset, from an ordinary least squares fit of HDHP-LAI on the values of each method over all 600 observations (24 reference positions on 25 dates), including the one shown. The calibrated row (hatched swatch) under each model scales its partial and total LAI by one factor, so the profile keeps its shape; its dashed chart line shows once you select the row or click its eye. Values ≤ 0 are drawn as 0.</p>
+        <p>Every method predicts from the point cloud alone, so its values are <strong>uncalibrated</strong>. A model’s value for a reference position and date is its mean LAI over the 109 prediction columns of the canopy cylinder. <strong>Calibrated</strong> = slope × value + offset, from an ordinary least squares fit of HDHP-LAI on the values of each method over all 600 observations (24 reference positions on 25 dates), including the one shown. The calibrated row (hatched swatch) under each model scales its partial and total LAI by one factor, so the profile keeps its shape; its dashed chart line shows once you select the row or switch on <em>Calibrated</em> under the chart. Values ≤ 0 are drawn as 0.</p>
       </section>
       <section>
         <h3>Right panel</h3>
         <ul>
-          <li><strong>Profile chart</strong>: the mean vertical LAI profile over the prediction columns, one line per model. Click a column in the 3D view for its own profile; <kbd>Esc</kbd> or <em>Back to the mean</em> returns.</li>
+          <li><strong>Profile chart</strong>: the mean vertical LAI profile over the prediction columns, one line per model. A name under the chart shows or hides its line, and <em>Calibrated</em> the dashed calibrated lines (real data). Click a column in the 3D view for its own profile; <kbd>Esc</kbd> or <em>Back to the mean</em> returns.</li>
           <li><strong>Total LAI</strong>: the mean total LAI of each model. On the real data <em>Uncalibrated</em> and <em>Calibrated</em>, beside the gap fraction and the field references, interpolated to the date: HDHP-LAI (long-term harmonized DHP LAI, on 25 of the 38 dates) and, in autumn 2024, DHP-LAI (short-term hemispherical-photo LAI) and LT-LAI (short-term litter-trap LAI, deciduous positions only). On synthetic stands, the LAI label, and the bias and mean absolute error of each model against it.</li>
           <li><strong>About</strong>: the stand, or the position, date and acquisition with the data references.</li>
         </ul>
