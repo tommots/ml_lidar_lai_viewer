@@ -3,7 +3,7 @@ import { Viewer } from './scene.js';
 import { Store, DEFAULTS, ITEM_KEYS, parseHash, buildHash } from './state.js';
 import { loadCatalog, reloadCatalog, requestPrepare, JobTracker, jobActive, jobFailed, KIND_LABELS, KIND_TABS } from './catalog.js';
 import { itemBase, fetchJSON, fetchArrayBuffer, parseGrids, PointStream, FORMAT_VERSION } from './loader.js';
-import { ItemData, DOI_RE } from './itemdata.js';
+import { ItemData } from './itemdata.js';
 import { OPERATOR } from './operator.js';
 import { PointCloud } from './points.js';
 import { VoxelResources, VoxelLayer } from './voxels.js';
@@ -12,7 +12,7 @@ import { MarkerLayer } from './markers.js';
 import { LabelLayer } from './labels.js';
 import { renderLegends, Gizmo, ScaleBar, LoadingBar, Tooltip } from './overlays.js';
 import { Picker, itemStatus } from './picker.js';
-import { LayersPanel, FoldPanel, TransectPanel, ViewsPanel, ModelsPanel, DetailsPanel, capText } from './panels.js';
+import { LayersPanel, FoldPanel, TransectPanel, ViewsPanel, ModelsPanel, DetailsPanel, capText, doiRef } from './panels.js';
 import { h, clear, debounce, rafThrottle, toast, storage, icon, fmtMillions, fmtDuration, coarsePointer } from './ui.js';
 import {
   voxelKey, compareKey, rasterKey, compareRasterKey, itemDefaults, itemState, hashPatch, sameFrame,
@@ -858,17 +858,17 @@ function fillPreviewHelp(cat) {
   const cite = $('help-cite');
   clear(cite);
   if (pv.paper) {
-    const link = (doi) => (DOI_RE.test(doi)
-      ? h('a', { href: `https://doi.org/${doi}`, target: '_blank', rel: 'noopener' }, `https://doi.org/${doi}`)
-      : `https://doi.org/${doi}`);
+    const paperRef = doiRef(pv.paper.doi, { url: true });
+    const dataRef = doiRef(pv.dataDoi, { url: true });
     cite.append('When you use the viewer or its data, please cite the paper, ', h('em', {}, pv.paper.title));
-    if (pv.paper.doi) cite.append(' (', link(pv.paper.doi), ')');
-    if (pv.dataDoi) cite.append(', the data (', link(pv.dataDoi), ')');
+    if (paperRef) cite.append(' (', paperRef, ')');
+    if (dataRef) cite.append(', the data (', dataRef, ')');
     cite.append(', and the data references below.');
     const refPaper = $('help-ref-paper');
-    if (refPaper && pv.paper.doi && DOI_RE.test(pv.paper.doi)) {
+    const ref = doiRef(pv.paper.doi);
+    if (refPaper && ref) {
       clear(refPaper);
-      refPaper.append(', ', h('a', { href: `https://doi.org/${pv.paper.doi}`, target: '_blank', rel: 'noopener noreferrer' }, `doi:${pv.paper.doi}`));
+      refPaper.append(', ', ref);
     }
   }
   sec.hidden = false;

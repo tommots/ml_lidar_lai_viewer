@@ -27,6 +27,8 @@ function percentile(arrays, keep, abs = false, stride = 1) {
 
 export const DOI_RE = /^10\.\d{4,9}\/[^\s"<>]+$/;
 
+export const DOI_PENDING = 'pending';
+
 function citationsOf(entry, groups) {
   const group = entry && Array.isArray(groups) ? groups.find((g) => g && g.key === entry.group) : null;
   const list = group && Array.isArray(group.citations) ? group.citations : [];
@@ -34,7 +36,7 @@ function citationsOf(entry, groups) {
     .map((c) => ({
       role: c && c.role ? String(c.role) : '',
       text: c && c.text ? String(c.text) : '',
-      doi: c && typeof c.doi === 'string' && DOI_RE.test(c.doi) ? c.doi : '',
+      doi: c && typeof c.doi === 'string' && (DOI_RE.test(c.doi) || c.doi === DOI_PENDING) ? c.doi : '',
     }))
     .filter((c) => c.role && (c.text || c.doi));
 }

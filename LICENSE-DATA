@@ -3,7 +3,8 @@ Data license
 The data of this repository, catalog.json and the files under cache/, are licensed under the
 Creative Commons Attribution 4.0 International license (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/
 
-Attribution: cite the paper, Predicting Forest Leaf Area Index from UAV LiDAR with Synthetic-to-Real Machine Learning (https://doi.org/10.XXXX/XXXXX), and the data
+Attribution: cite the paper, Predicting Forest Leaf Area Index from UAV LiDAR with
+Synthetic-to-Real Machine Learning (DOI coming soon), the data (DOI coming soon), and the data
 sources listed in README.md.
 
 The code (index.html, css/ and js/) is licensed under the MIT License (LICENSE); three.js in

@@ -3,7 +3,7 @@
 An interactive 3D viewer of UAV LiDAR point clouds and of the leaf area index (LAI) that machine
 learning models predict from them: the vertical LAI profile (the partial LAI of each 2 m height
 bin) and the total LAI of every 2 m × 2 m prediction column. It accompanies the paper
-*Predicting Forest Leaf Area Index from UAV LiDAR with Synthetic-to-Real Machine Learning* (<https://doi.org/10.XXXX/XXXXX>).
+*Predicting Forest Leaf Area Index from UAV LiDAR with Synthetic-to-Real Machine Learning* (DOI coming soon).
 
 ## What the preview shows
 
@@ -26,7 +26,7 @@ because browsers block module scripts and data requests on `file://` URLs.
 
 ## Citation and license
 
-When you use the viewer or its data, please cite the paper, *Predicting Forest Leaf Area Index from UAV LiDAR with Synthetic-to-Real Machine Learning* (<https://doi.org/10.XXXX/XXXXX>), and the data sources below.
+When you use the viewer or its data, please cite the paper, *Predicting Forest Leaf Area Index from UAV LiDAR with Synthetic-to-Real Machine Learning* (DOI coming soon), the data (DOI coming soon), and the data sources below.
 
 - **Code:** MIT license (`LICENSE`).
 - **Data** (`catalog.json` and `cache/`): CC BY 4.0 (`LICENSE-DATA`).

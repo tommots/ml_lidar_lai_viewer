@@ -12,6 +12,7 @@ import {
 } from './clip.js';
 import { presetDir } from './scene.js';
 import { OPERATOR } from './operator.js';
+import { DOI_RE, DOI_PENDING } from './itemdata.js';
 
 export { visibleLayerIds };
 
@@ -27,6 +28,13 @@ export function budgetSteps(count) {
 
 export function capText(n) {
   return n >= 1e6 && n % 1e6 === 0 ? `${n / 1e6} million` : Math.round(n).toLocaleString('en-US');
+}
+
+export function doiRef(doi, { url = false } = {}) {
+  if (doi === DOI_PENDING) return 'DOI coming soon';
+  if (typeof doi !== 'string' || !DOI_RE.test(doi)) return null;
+  const href = `https://doi.org/${doi}`;
+  return h('a', { href, target: '_blank', rel: 'noopener noreferrer' }, url ? href : `doi:${doi}`);
 }
 
 function validCalibration(c) {
@@ -871,7 +879,7 @@ export class DetailsPanel {
     const dl = h('dl', { class: 'info-list' });
     for (const [k, v] of rows) dl.append(h('dt', {}, String(k)), h('dd', {}, String(v)));
     for (const c of d.citations || []) {
-      const link = c.doi ? h('a', { href: `https://doi.org/${c.doi}`, target: '_blank', rel: 'noopener noreferrer' }, `doi:${c.doi}`) : null;
+      const link = doiRef(c.doi);
       dl.append(h('dt', {}, c.role), h('dd', { class: 'cite' }, c.text, c.text && link ? ' · ' : null, link));
     }
     el.appendChild(dl);
