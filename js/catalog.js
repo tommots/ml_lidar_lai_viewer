@@ -83,8 +83,7 @@ function normalisePreview(p, items = []) {
   const paper = p.paper && typeof p.paper === 'object' && str(p.paper.title)
     ? { title: str(p.paper.title), doi: str(p.paper.doi) } : null;
   const datesShown = new Set(items.filter((i) => i.kind === 'ecosense').map((i) => i.meta && i.meta.date)).size;
-  const references = Array.isArray(p.references) ? p.references.map(String).filter(Boolean) : [];
-  return { capFor, datesTotal: ok(p.ecosense_dates_total), datesShown, references, paper, dataDoi: str(p.data_doi) };
+  return { capFor, datesTotal: ok(p.ecosense_dates_total), datesShown, paper, dataDoi: str(p.data_doi) };
 }
 
 export async function requestPrepare(id, force = false) {

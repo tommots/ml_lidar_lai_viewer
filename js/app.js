@@ -853,11 +853,8 @@ function fillPreviewHelp(cat) {
     if (cs) caps.push(`${capText(cs)} points per synthetic stand`);
     if (ce) caps.push(`${capText(ce)}${caps.length ? '' : ' points'} per ECOSENSE data set`);
   }
-  const refs = eco.length ? pv.references : [];
-  const refText = refs.length === 1 ? ` On these dates, the field reference is ${refs[0]}.`
-    : refs.length > 1 ? ` On these dates, the field references are ${refs.slice(0, -1).join(', ')} and ${refs[refs.length - 1]}.` : '';
   $('help-preview-text').textContent = `It holds ${what.join(' and ')}`
-    + (caps.length ? `, with at most ${caps.join(' and ')} (uniform subsamples).` : '.') + refText;
+    + (caps.length ? `, with at most ${caps.join(' and ')} (uniform subsamples).` : '.');
   const cite = $('help-cite');
   clear(cite);
   if (pv.paper) {
