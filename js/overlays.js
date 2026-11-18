@@ -29,8 +29,7 @@ export function renderLegends(el, entries, opts = {}) {
       else ticks.append(h('span', {}, legendNum(e.min, e)), h('span', {}, legendNum((e.min + e.max) / 2, e)), h('span', {}, `${legendNum(e.max, e)}${e.capped ? '+' : ''}`));
       box.appendChild(ticks);
       if (div) box.appendChild(h('div', { class: 'cbar-poles', 'aria-hidden': 'true' }, h('span', {}, '← prediction lower'), h('span', {}, 'prediction higher →')));
-      const unit = [e.unit, e.sub].filter(Boolean).join(' · ');
-      if (unit) box.appendChild(h('div', { class: 'legend-unit' }, unit));
+      for (const line of [e.unit, e.sub, e.note]) if (line) box.appendChild(h('div', { class: 'legend-unit' }, line));
     } else if (e.type === 'cat') {
       const cats = e.categories.slice(0, 8);
       const list = h('ul', { class: `legend-cats${cats.length > 3 ? ' two-col' : ''}` });
@@ -44,7 +43,7 @@ export function renderLegends(el, entries, opts = {}) {
       box.appendChild(list);
       if (e.note) box.appendChild(h('div', { class: 'legend-unit' }, e.note));
     } else if (e.type === 'rgb') {
-      box.appendChild(h('div', { class: 'legend-unit' }, ['camera color of each point', e.note].filter(Boolean).join(' · ')));
+      for (const line of ['camera color of each point', e.note]) if (line) box.appendChild(h('div', { class: 'legend-unit' }, line));
     }
     el.appendChild(box);
   }

@@ -690,6 +690,7 @@ body.comparing .legends-right { left: calc(50% + 10px); bottom: 10px; max-width:
 .cbar-poles { color: var(--muted); font-size: 10.5px; margin-top: 0; gap: 8px; }
 .cbar-poles span:last-child { text-align: right; }
 .legend-unit { font-size: 10.5px; color: var(--muted); margin-top: 2px; line-height: 1.3; }
+.legend-unit + .legend-unit { margin-top: 0; }
 .legend-cats { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px 10px; }
 .legend-cats.two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .legend-cats li { display: flex; align-items: center; gap: 6px; }

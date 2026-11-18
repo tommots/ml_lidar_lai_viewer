@@ -361,7 +361,8 @@ export function voxelThreshold(data, st, src) {
 
 export function unitFor(src, what) {
   const base = what === 'partial' ? `partial LAI per ${src.grid.dz} m height bin` : 'total LAI';
-  return src.type === 'error' ? `Prediction − label, ${base} [m² m⁻²]` : `${base.charAt(0).toUpperCase()}${base.slice(1)} [m² m⁻²]`;
+  const unit = '[m²\u00a0m⁻²]';
+  return src.type === 'error' ? `Prediction − label, ${base} ${unit}` : `${base.charAt(0).toUpperCase()}${base.slice(1)} ${unit}`;
 }
 
 export function legendEntries(data, st, pointsLegend) {
