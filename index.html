@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LAI canopy viewer</title>
+<meta name="description" content="Interactive 3D viewer of UAV LiDAR point clouds of synthetic stands and the ECOSENSE forest, with the leaf area index (LAI) predicted by machine learning models: the vertical LAI profile and the total LAI.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1116'/%3E%3Cpath d='M8 23c0-9 5-15 16-16-1 11-7 16-16 16z' fill='%235cc8a4'/%3E%3Cpath d='M8 23l8-8' stroke='%230d1116' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>
+  (function () {
+    var t = null;
+    try { t = JSON.parse(localStorage.getItem('lai-canopy-theme')); } catch (e) { t = null; }
+    document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+  })();
+</script>
+<link rel="stylesheet" href="css/app.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./js/lib/three/three.module.min.js",
+    "three/addons/": "./js/lib/three/addons/"
+  }
+}
+</script>
+<script type="module" src="js/app.js"></script>
+</head>
+<body data-state="boot">
+<a class="skip-link" href="#viewport">Skip to the 3D view</a>
+
+<header class="topbar">
+  <button type="button" class="icon-btn only-narrow" id="btn-menu" aria-label="Open the controls" aria-controls="sidebar" aria-expanded="false">
+    <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <div class="brand">
+    <svg class="brand-mark" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" class="brand-bg"/><path d="M8 23c0-9 5-15 16-16-1 11-7 16-16 16z" class="brand-leaf"/><path d="M8 23l8-8" class="brand-vein" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="brand-text">
+      <div class="brand-title"><h1>LAI canopy viewer</h1><span class="preview-badge" id="preview-badge" hidden>Preview</span></div>
+      <p class="subtitle">Leaf area index from UAV LiDAR: synthetic stands and the ECOSENSE forest</p>
+    </div>
+  </div>
+  <div class="item-nav">
+    <button type="button" class="item-btn" id="btn-item" aria-label="Choose the data" title="Choose the data">
+      <span class="item-kind" id="item-btn-kind">Data</span>
+      <span class="item-label" id="item-btn-label">Loading…</span>
+      <svg class="icon chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="date-nav" id="date-nav" hidden>
+      <button type="button" class="icon-btn" id="btn-prev-date" aria-label="Previous LiDAR acquisition date at this reference position" title="Previous date ( [ )">
+        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <button type="button" class="icon-btn" id="btn-next-date" aria-label="Next LiDAR acquisition date at this reference position" title="Next date ( ] )">
+        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="actions actions-view" role="group" aria-label="View actions">
+    <button type="button" class="tool-btn" id="btn-compare" aria-pressed="false" aria-label="Compare two layers side by side" title="Compare two layers side by side">
+      <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M4 5h16v14H4z"/></svg><span class="btn-text">Compare</span>
+    </button>
+  </div>
+  <div class="actions actions-app" role="group" aria-label="Help and theme">
+    <button type="button" class="tool-btn" id="btn-help" aria-label="Help: what am I looking at?" title="Help ( ? )">
+      <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21a9 9 0 100-18 9 9 0 000 18zM9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17h.01"/></svg><span class="btn-text">Help</span>
+    </button>
+    <button type="button" class="tool-btn icon-only" id="btn-theme" aria-label="Switch theme"></button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar" aria-label="Controls">
+    <div class="drawer-head only-narrow">
+      <span>Controls</span>
+      <button type="button" class="icon-btn" id="drawer-close" aria-label="Close the controls">
+        <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <section class="panel" id="sec-picker" aria-labelledby="sec-picker-h">
+      <h2 class="sec-head" id="sec-picker-h"><button type="button" class="sec-toggle" aria-expanded="true" aria-controls="picker"><svg class="icon chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>Data</button></h2>
+      <div class="sec-body" id="picker"></div>
+    </section>
+    <section class="panel" id="sec-layers" aria-labelledby="sec-layers-h">
+      <h2 class="sec-head" id="sec-layers-h"><button type="button" class="sec-toggle" aria-expanded="true" aria-controls="layers-panel"><svg class="icon chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>Layers</button></h2>
+      <div class="sec-body" id="layers-panel"></div>
+    </section>
+    <section class="panel" id="sec-models" aria-labelledby="sec-models-h">
+      <h2 class="sec-head" id="sec-models-h"><button type="button" class="sec-toggle" aria-expanded="true" aria-controls="models-panel"><svg class="icon chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>Models</button></h2>
+      <div class="sec-body" id="models-panel"></div>
+    </section>
+  </aside>
+
+  <main class="main" id="main">
+    <div class="viewport" id="viewport" tabindex="-1" role="region" aria-label="3D view">
+      <div class="canvas-host" id="canvas-host"></div>
+      <div class="labels" id="labels" aria-hidden="true"></div>
+      <div class="loading" id="loading" hidden role="status" aria-live="polite">
+        <div class="loading-track"><div class="loading-fill"></div></div>
+        <div class="loading-text"></div>
+      </div>
+      <div class="compare-labels" id="compare-labels" hidden>
+        <div class="cmp-label cmp-left">
+          <span class="cmp-swatch" id="cmp-left-swatch" aria-hidden="true"></span>
+          <label class="sr-only" for="cmp-select">Layer shown on the left</label>
+          <select id="cmp-select"></select>
+        </div>
+        <div class="cmp-divider" aria-hidden="true"></div>
+        <div class="cmp-label cmp-right">
+          <span class="cmp-swatch" id="cmp-right-swatch" aria-hidden="true"></span>
+          <span id="cmp-right-text"></span><span class="cmp-tag">active</span>
+        </div>
+      </div>
+      <div class="view-stack" id="view-stack">
+        <div class="layers" id="layers" role="group" aria-label="Layers">
+          <div class="layer-chips" id="layers-body" role="group" aria-label="Visible layers">
+            <button type="button" class="layer-chip" data-layer="showPoints" aria-pressed="true"><span class="chip-check" aria-hidden="true"></span>Points</button>
+            <button type="button" class="layer-chip" data-layer="showVoxels" aria-pressed="true"><span class="chip-check" aria-hidden="true"></span>Partial LAI</button>
+            <button type="button" class="layer-chip" data-layer="showRaster" aria-pressed="true"><span class="chip-check" aria-hidden="true"></span>Total LAI</button>
+          </div>
+        </div>
+        <div class="transect" id="transect" role="group" aria-label="Transect" hidden></div>
+        <div class="views" id="views" role="group" aria-label="Views" hidden></div>
+      </div>
+      <button type="button" class="details-open" id="btn-details-open" hidden aria-label="Show the profile and total LAI panel">Profile &amp; total LAI</button>
+      <div class="legends" id="legends" role="group" aria-label="Color legends"></div>
+      <div class="legends legends-right" id="legends-right" role="group" aria-label="Color legends of the right half" hidden></div>
+      <div class="gizmo-wrap" id="gizmo-wrap">
+        <div id="gizmo-host"></div>
+        <div id="scale-host"></div>
+      </div>
+      <div class="tooltip" id="tooltip" hidden></div>
+      <div class="empty-state" id="empty-state" hidden></div>
+      <div class="help-hint" id="help-hint" hidden>
+        <p>New here? A short guide explains the data, layers, colors and controls.</p>
+        <div class="help-hint-actions">
+          <button type="button" class="btn btn-small btn-primary" id="help-hint-open">Open the guide</button>
+          <button type="button" class="btn btn-small" id="help-hint-close">Dismiss</button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="details" id="details" aria-labelledby="details-h">
+      <div class="details-head">
+        <h2 id="details-h">Profile &amp; total LAI</h2>
+        <button type="button" class="btn btn-small" id="btn-mean" hidden>Back to the mean</button>
+        <button type="button" class="icon-btn hide-narrow" id="btn-details" aria-expanded="true" aria-controls="details" aria-label="Hide the profile and total LAI panel" title="Hide panel">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM15 4v16"/></svg>
+        </button>
+      </div>
+      <div class="details-body">
+        <p class="details-empty">Choose a synthetic stand, or a reference position and date, to see the vertical LAI profile and the total LAI here.</p>
+        <div id="chart" class="chart"></div>
+        <div id="totals" class="totals"></div>
+        <div id="info" class="info"></div>
+      </div>
+    </aside>
+  </main>
+</div>
+<div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+
+<dialog class="help" id="help" aria-labelledby="help-title">
+  <div class="help-inner">
+    <div class="help-head">
+      <h2 id="help-title">What am I looking at?</h2>
+      <button type="button" class="icon-btn" id="help-close" aria-label="Close the help">
+        <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="help-body">
+      <section id="help-preview" hidden>
+        <h3>Preview version</h3>
+        <p id="help-preview-text"></p>
+        <p id="help-cite" class="help-cite"></p>
+      </section>
+      <section>
+        <h3>Leaf area index (LAI)</h3>
+        <p>LAI is the one-sided leaf area per unit ground area (for conifer needles, half their total intercepting area): at an LAI of 4, the leaves above 1&nbsp;m² of ground, laid flat, would cover it four times. Machine learning models, trained on synthetic stands only, predict the <strong>vertical LAI profile</strong> of every 2&nbsp;m × 2&nbsp;m <strong>prediction column</strong>: the <strong>partial LAI</strong> of each 2&nbsp;m height bin from 0 to 50&nbsp;m above ground, which sum to the <strong>total LAI</strong> of the column.</p>
+      </section>
+      <section>
+        <h3>Data</h3>
+        <ul>
+          <li><strong>Synthetic</strong>: stands of The Grove tree meshes with exact <strong>LAI labels</strong> from the leaf meshes, scanned by HELIOS++ virtual laser scanning matched to the ECOSENSE acquisition. Each is a test stand of the models shown with it; <em>About</em> lists its parameters, such as the <em>twig density</em> (The Grove’s interior twig density) and the <em>simplification</em> (the mesh reduction before scanning: minor, or major for stands with large trees). A filter narrows the list by species, height, foliation and more.</li>
+          <li><strong>ECOSENSE</strong>: the real data, UAV LiDAR acquisitions of a mixed forest dominated by European beech on 38 dates from April 2024 to June 2026. Choose one of the 24 <strong>reference positions</strong>, laid out as in the field (D deciduous, M mixed/coniferous canopy), then a date (H: with HDHP-LAI). Shown are the points of the 109 prediction columns of the <strong>canopy cylinder</strong> (radius 10.9&nbsp;m) around the position.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Layers</h3>
+        <p>The chips at the top left switch the layers on and off; the sidebar groups of the same names hold their options.</p>
+        <ul>
+          <li><strong>Points</strong>: the LiDAR returns, colored by height or another attribute. On the real data, returns less than 1&nbsp;m above the ground are removed for the models (ground removal) and drawn gray.</li>
+          <li><strong>Partial LAI</strong>: one voxel per prediction column and height bin, from a model or, on synthetic stands, the LAI label or an error layer.</li>
+          <li><strong>Total LAI</strong>: one cell per prediction column on the ground, by default from the partial LAI source (<em>Follow the partial LAI source</em>).</li>
+          <li><strong>Helpers</strong>: <em>Column grid</em>, <em>Markers</em>, <em>Canopy cylinder</em> and <em>Terrain</em> (real data), <em>Axes</em> with the scale bar.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Colors</h3>
+        <ul>
+          <li><strong>Fading green</strong> (default): white to green, the darker, the more LAI; low values turn transparent, so near-empty voxels fade into the background.</li>
+          <li><strong>Viridis</strong>: dark purple (little LAI) to yellow (much LAI), chosen under <em>Color map</em>.</li>
+          <li><strong>Prediction − label</strong> (synthetic stands): blue where the prediction is below the label, red where it is above. Small errors fade; voxels below 15&nbsp;% of the color scale are hidden at first.</li>
+          <li>The color scale ends at the 98th percentile of all listed layers (<em>Shared by all layers</em>) or of the drawn layer (<em>Per layer</em>).</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Models</h3>
+        <p>Click a model to draw it; its eye shows or hides its line in the profile chart, and the number is its mean total LAI.</p>
+        <ul>
+          <li><strong>Gap fraction</strong>: the parametric baseline, which requires no training. A Beer–Lambert inversion of the proportion of returns below 1.8&nbsp;m above the terrain gives one total LAI per canopy cylinder (real data, Total LAI table only).</li>
+          <li><strong>Hand-crafted features</strong>: Feature-MLP and Random Forest, on 35 height and density statistics of the points in the prediction column.</li>
+          <li><strong>Raw-point encoders</strong>: PointNet++, PointNet and KPConv, on the points of the 6&nbsp;m × 6&nbsp;m context window around the column.</li>
+          <li><strong>Fusion</strong>: Fusion-A, Fusion-B and Fusion-C, PointNet++ combined with the hand-crafted features.</li>
+        </ul>
+        <p>The trained models were fit on the training partition (36 stands) of the training set (51 synthetic stands, foliation ≤ 75&nbsp;%). <em>Show side experiments</em> adds models trained without return information or on the training partition (51 stands) of the full stand set (73 stands).</p>
+      </section>
+      <section>
+        <h3>Uncalibrated and calibrated (real data)</h3>
+        <p>Every method predicts from the point cloud alone, so its values are <strong>uncalibrated</strong>. A model’s value for a reference position and date is its mean LAI over the 109 prediction columns of the canopy cylinder. <strong>Calibrated</strong> = slope × value + offset, from an ordinary least squares fit of HDHP-LAI on the values of each method over all 600 observations (24 reference positions on 25 dates), including the one shown. The calibrated row (hatched swatch) under each model scales its partial and total LAI by one factor, so the profile keeps its shape; its dashed chart line shows once you select the row or click its eye. Values ≤ 0 are drawn as 0.</p>
+      </section>
+      <section>
+        <h3>Right panel</h3>
+        <ul>
+          <li><strong>Profile chart</strong>: the mean vertical LAI profile over the prediction columns, one line per model. Click a column in the 3D view for its own profile; <kbd>Esc</kbd> or <em>Back to the mean</em> returns.</li>
+          <li><strong>Total LAI</strong>: the mean total LAI of each model. On the real data <em>Uncalibrated</em> and <em>Calibrated</em>, beside the gap fraction and the field references, interpolated to the date: HDHP-LAI (long-term harmonized DHP LAI, on 25 of the 38 dates) and, in autumn 2024, DHP-LAI (short-term hemispherical-photo LAI) and LT-LAI (short-term litter-trap LAI, deciduous positions only). On synthetic stands, the LAI label, and the bias and mean absolute error of each model against it.</li>
+          <li><strong>About</strong>: the stand, or the position, date and acquisition with the data references. The <em>LAI ratio</em> divides the HDHP-LAI of the Low-LAI season (about mid-November to March) by that of the High-LAI season (about May to September).</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Transect, views and compare</h3>
+        <ul>
+          <li><strong>Transect</strong> (top left): sliders with two knobs for E, N and H (synthetic stands: x, y, z) cut the scene by prediction column and height bin; set both E knobs to one column for a slice one column deep. On the real data, the height bins of each column start at the lowest DTM elevation of its context window, so a slice follows the terrain. ×&nbsp;resets; the chart and the table still cover all columns.</li>
+          <li><strong>Views</strong>: from the east, west, north or south (E, W, N, S; synthetic stands: +x, −x, +y, −y), from above or below, or isometric from the front (the start view) or the back, fitted to the transect.</li>
+          <li><strong>Compare</strong> (top bar): two layers side by side with one camera; the menu on the left chooses the left layer, the right half shows the active one.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Mouse, touch and keys</h3>
+        <ul class="keys">
+          <li><span>Rotate</span> left-drag · one finger</li>
+          <li><span>Pan</span> right-drag, Shift + drag · two fingers</li>
+          <li><span>Zoom</span> mouse wheel · pinch</li>
+          <li><span>Values</span> hover; click a column for its profile</li>
+          <li><span>Orbit center</span> double-click a point</li>
+          <li><span>Turn</span> click E or N (x, y) of the axis symbol, bottom left, to turn the view by 180°, z to look from below or above</li>
+          <li><span>3D view</span> arrows pan, <kbd>Shift</kbd> + arrows rotate, <kbd>+</kbd> <kbd>−</kbd> zoom, <kbd>Home</kbd> resets</li>
+          <li><span>Keys</span> <kbd>?</kbd> help · <kbd>Esc</kbd> back to the mean profile · <kbd>[</kbd> <kbd>]</kbd> previous / next date</li>
+          <li><span>Transect</span> arrows move a knob one step, <kbd>PgUp</kbd> <kbd>PgDn</kbd> a tenth, <kbd>Home</kbd> <kbd>End</kbd> to the end</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Data references</h3>
+        <ul>
+          <li><strong>Point clouds</strong> of the ECOSENSE forest: Gassilloud, Koch &amp; Goeritz (2026).</li>
+          <li><strong>Field LAI</strong>: the methods and the data of autumn 2024 (DHP-LAI, LT-LAI), Lotz et al. (2026); the HDHP-LAI series to 2026, the paper.</li>
+          <li><strong>Synthetic stands</strong>: The Grove (van Keulen, 2025), growpy (Sperlich &amp; Jaksztat, 2026) and HELIOS++ (Winiwarter et al., 2022).</li>
+          <li><em>About</em> links the real-data references by DOI.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</dialog>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<noscript><p class="noscript">This viewer needs JavaScript and WebGL.</p></noscript>
+<script>
+  var fromDisk = location.protocol === 'file:';
+  setTimeout(function () {
+    if (document.body.getAttribute('data-state') !== 'boot') return;
+    var el = document.getElementById('empty-state');
+    el.innerHTML = fromDisk
+      ? '<h2>The viewer could not start</h2><p>Opened from the disk, the browser blocks its scripts and data. Please serve this folder with a web server, e.g. <code>python3 -m http.server 8000</code> in it, then open http://localhost:8000/ (see the README).</p>'
+      : '<h2>The viewer could not start</h2><p>It needs a current browser with WebGL (Chrome, Edge, Firefox or Safari from 2023 on). Please reload the page or try another browser.</p>';
+    el.hidden = false;
+  }, fromDisk ? 0 : 15000);
+</script>
+</body>
+</html>

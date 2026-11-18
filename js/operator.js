@@ -1,0 +1,17 @@
+export const OPERATOR = {
+  defaultItem: '',
+  noData: 'No data available.',
+  noneReady: 'No data available.',
+  rebuildStale: '',
+  rebuildStaleClause: '',
+  jobLost: 'stopped',
+  jobLostToast: 'Loading {label} stopped. Choose it again to retry.',
+  chooseSome: '',
+  chooseAny: '',
+  updateTitle: '',
+  updateClause: '',
+  notReadyTitle: '',
+  loadsIn: '',
+  loadsOnClick: '',
+  notReady: '',
+};
