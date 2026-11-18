@@ -40,3 +40,7 @@ When you use the viewer or its data, please cite the paper, *Predicting Forest L
 - Synthetic stands: The Grove (van Keulen, 2025), growpy (Sperlich & Jaksztat, 2026) and HELIOS++
   (Winiwarter et al., 2022)
 - three.js r160 (MIT license), included in `js/lib/three/`
+
+## Feedback
+
+Questions and suggestions are welcome as GitHub issues.
