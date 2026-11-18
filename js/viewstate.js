@@ -385,7 +385,7 @@ export function legendEntries(data, st, pointsLegend) {
     const entry = (e, side, title) => ({
       key: `${what}-${side}`, side, type: e.sc.type, map: e.sc.map, from: e.sc.from, to: e.sc.to,
       min: 0, max: e.sc.max, capped: true, title, unit: unitFor(e.src, what),
-      sub: st.scaleMode === 'shared' && !e.src.extra ? 'shared scale' : 'own scale',
+      sub: st.scaleMode === 'shared' && !e.src.extra ? 'scale of all models' : 'own scale',
     });
     if (entries.length === 1) {
       out.push(entry(entries[0], entries[0].side, `${name} · ${entries[0].src.short}`));
