@@ -52,6 +52,7 @@ export class Picker {
     this.query = '';
     this.trap = null;
     this.current = null;
+    this.lastOfKind = new Map();
     this.seriesKey = null;
     this.mode = h('p', { class: 'picker-mode', hidden: true });
     this.tabs = h('div', { class: 'tabs', role: 'tablist', 'aria-label': 'Data' });
@@ -80,9 +81,39 @@ export class Picker {
     const it = id && this.cat ? this.cat.byId.get(id) : null;
     if (it) {
       this.kind = it.kind;
+      this.lastOfKind.set(it.kind, it.id);
       if (it.kind === 'ecosense' && it.meta.trap) this.trap = it.meta.trap;
     }
     this.render();
+  }
+
+  openable(it) {
+    return !!it && this.listed(it) && itemStatus(it) !== 'failed' && this.available([it]).length > 0;
+  }
+
+  firstOf(kind) {
+    const def = this.handlers.defaultItem ? this.handlers.defaultItem() : null;
+    if (def && def.kind === kind && this.openable(def)) return def;
+    const items = this.cat.items.filter((i) => i.kind === kind && this.openable(i));
+    if (kind === 'ecosense') {
+      return items.sort((a, b) => String(a.meta.trap).localeCompare(String(b.meta.trap), undefined, { numeric: true })
+        || String(a.meta.date).localeCompare(String(b.meta.date)))[0] || null;
+    }
+    const groups = this.cat.groups.filter((g) => g.kind === kind).map((g) => g.key);
+    const rank = (i) => (groups.includes(i.group) ? groups.indexOf(i.group) : groups.length);
+    return items.sort((a, b) => rank(a) - rank(b) || bySortKey(a, b))[0] || null;
+  }
+
+  switchKind(k) {
+    if (!this.cat || k === this.kind) return;
+    const cur = this.current ? this.cat.byId.get(this.current) : null;
+    this.kind = k;
+    this.render();
+    const last = this.cat.byId.get(this.lastOfKind.get(k));
+    const it = this.openable(last) ? last : this.firstOf(k);
+    if (!it) return;
+    if (cur && it.id === cur.id && !(this.handlers.busy && this.handlers.busy())) return;
+    this.handlers.onSelect(it, {});
   }
 
   focusSearch() {
@@ -168,12 +199,11 @@ export class Picker {
       const btn = h('button', {
         type: 'button', role: 'tab', class: 'tab', 'aria-selected': String(selected), tabindex: selected ? 0 : -1,
         dataset: { focusKey: `tab:${k}` },
-        onclick: () => { this.kind = k; this.render(); },
+        onclick: () => this.switchKind(k),
         onkeydown: (e) => {
           if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
           const j = (i + (e.key === 'ArrowRight' ? 1 : kinds.length - 1)) % kinds.length;
-          this.kind = kinds[j];
-          this.render();
+          this.switchKind(kinds[j]);
           this.tabs.querySelector('[aria-selected="true"]')?.focus();
         },
         title: KIND_LABELS[k] || k,

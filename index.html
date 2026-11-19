@@ -129,7 +129,7 @@
       <div class="tooltip" id="tooltip" hidden></div>
       <div class="empty-state" id="empty-state" hidden></div>
       <div class="help-hint" id="help-hint" hidden>
-        <p>New here? A short guide explains the data, layers, colors and controls.</p>
+        <p>New here? A short guide explains the data, layers and controls.</p>
         <div class="help-hint-actions">
           <button type="button" class="btn btn-small btn-primary" id="help-hint-open">Open the guide</button>
           <button type="button" class="btn btn-small" id="help-hint-close">Dismiss</button>
@@ -179,6 +179,7 @@
         <ul>
           <li><strong>Synthetic</strong>: stands of The Grove tree meshes with exact <strong>LAI labels</strong> from the leaf meshes, scanned by HELIOS++ virtual laser scanning matched to the ECOSENSE acquisition. Each is a test stand of the models shown with it; <em>About</em> lists its parameters, such as the <em>twig density</em> (The Grove’s interior twig density) and the <em>simplification</em> (the mesh reduction before scanning: minor, or major for stands with large trees). A filter narrows the list by species, height, foliation and more.</li>
           <li><strong>ECOSENSE</strong>: the real data, UAV LiDAR acquisitions of a mixed forest dominated by European beech on 38 dates from April 2024 to June 2026. Choose one of the 24 <strong>reference positions</strong>, laid out as in the field (D deciduous, M mixed/coniferous canopy), then a date (H: with HDHP-LAI). Once a data set is open, a click on another position opens that position on the same date. Shown are the points of the 109 prediction columns of the <strong>canopy cylinder</strong> (radius 10.9&nbsp;m) around the position.</li>
+          <li>Switching the tab opens the data set shown last on that tab; the first time, the first stand or LT11.</li>
         </ul>
       </section>
       <section>
@@ -189,15 +190,6 @@
           <li><strong>Partial LAI</strong>: one voxel per prediction column and height bin, from a model or, on synthetic stands, the LAI label or an error layer.</li>
           <li><strong>Total LAI</strong>: one cell per prediction column on the ground, by default from the partial LAI source (<em>Follow the partial LAI source</em>).</li>
           <li><strong>Helpers</strong>: <em>Column grid</em>, <em>Markers</em>, <em>Canopy cylinder</em> and <em>Terrain</em> (real data), <em>Axes</em> with the scale bar.</li>
-        </ul>
-      </section>
-      <section>
-        <h3>Colors</h3>
-        <ul>
-          <li><strong>Fading green</strong> (default): white to green, the darker, the more LAI; low values turn transparent, so near-empty voxels fade into the background.</li>
-          <li><strong>Viridis</strong>: dark purple (little LAI) to yellow (much LAI), chosen under <em>Color map</em>.</li>
-          <li><strong>Prediction − label</strong> (synthetic stands): blue where the prediction is below the label, red where it is above. Small errors fade; voxels below 15&nbsp;% of the color scale are hidden at first.</li>
-          <li>The color scale ends at the 98th percentile of this data set: of all listed models (<em>All models</em>) or of the drawn one (<em>Per model</em>).</li>
         </ul>
       </section>
       <section>

@@ -75,7 +75,11 @@ async function init() {
   app.viewer.afterRender.push(afterRender);
   app.viewer.controls.addEventListener('change', () => writeHash());
 
-  app.picker = new Picker($('picker'), { onSelect: (item, opts) => requestItem(item, { ...opts, push: true }) });
+  app.picker = new Picker($('picker'), {
+    onSelect: (item, opts) => requestItem(item, { ...opts, push: true }),
+    defaultItem: () => defaultItem(),
+    busy: () => document.body.dataset.state === 'loading' || !!app.pendingLoad,
+  });
   app.layersPanel = new LayersPanel($('layers-panel'), app.store, {
     voxelKey: () => (app.cur ? voxelKey(app.cur.data, app.store.state) : ''),
     rasterKey: () => (app.cur ? rasterKey(app.cur.data, app.store.state) : ''),

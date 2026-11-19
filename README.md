@@ -13,7 +13,7 @@ bin) and the total LAI of every 2 m × 2 m prediction column. It accompanies the
   LiDAR acquisition dates (2025-08-07, 2025-11-04, 2026-02-25 and 2026-04-17), with the model predictions and the field reference HDHP-LAI.
 - **Points:** at most 1 million points per synthetic stand and 500,000 per ECOSENSE data set, uniform subsamples (ECOSENSE: of the points in the prediction columns around the reference position).
 
-The Help in the viewer explains the data, the layers, the colors and the controls.
+The Help in the viewer explains the data, the layers and the controls.
 
 ## Run it locally
 
