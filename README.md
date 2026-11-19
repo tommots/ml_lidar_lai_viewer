@@ -7,7 +7,7 @@ bin) and the total LAI of every 2 m × 2 m prediction column. It accompanies the
 
 ## What the preview shows
 
-- **Synthetic stands:** 18 test stands, with their LAI labels from the leaf meshes and the
+- **Synthetic stands:** 7 test stands, with their LAI labels from the leaf meshes and the
   predictions of the models that were not trained on them.
 - **ECOSENSE forest:** all 24 reference positions on 4 of the 38
   LiDAR acquisition dates (2025-08-07, 2025-11-04, 2026-02-25 and 2026-04-17), with the model predictions and the field reference HDHP-LAI.
